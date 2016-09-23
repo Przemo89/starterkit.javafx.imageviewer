@@ -66,6 +66,12 @@ public class ImageViewerController {
 	@FXML
 	private Slider zoomSlider;
 	
+	@FXML
+	private Button previousImageButton;
+	
+	@FXML
+	private Button nextImageButton;
+	
 	private final long INTERVAL_TIME = 5000L;
 	
 	private ImageViewerModel model = new ImageViewerModel();
@@ -82,6 +88,8 @@ public class ImageViewerController {
 		initializeListView();
 		initializeCheckBox();
 		initializeSlider();
+		nextImageButton.setDisable(true);
+		previousImageButton.setDisable(true);
 	}
 
 	private void initializeSlider() {
@@ -151,7 +159,7 @@ public class ImageViewerController {
 			fileList.getSelectionModel().select(model.getCurrentOpenedImage());
 			return;
 		} else {
-		openImage(fileList.getSelectionModel().getSelectedItem());
+			openImage(fileList.getSelectionModel().getSelectedItem());
 		}
 		if (isSlideShowEnabled == true) {
 			isSlideShowRestartRequired = true;
@@ -176,6 +184,16 @@ public class ImageViewerController {
 		}
 		disableSlideShow();
 		processSelectedImage(file);
+	}
+	
+	private void handleNextAndPreviousButton() {
+		if (fileList.getItems().size() <= 1) {
+			nextImageButton.setDisable(true);
+			previousImageButton.setDisable(true);
+			return;
+		}
+		nextImageButton.setDisable(false);
+		previousImageButton.setDisable(false);
 	}
 
 	private void disableSlideShow() {
@@ -227,6 +245,7 @@ public class ImageViewerController {
 							fileList.add(file);
 						}
 						model.setImagesInDirectory(fileList);
+						handleNextAndPreviousButton();
 					}
 				}
 				return null;
@@ -260,7 +279,6 @@ public class ImageViewerController {
 					}
 					if (model.getImagesInDirectory().get(i).exists() && model.getImagesInDirectory().get(i) != model.getCurrentOpenedImage()) {
 						openImage(model.getImagesInDirectory().get(i));
-						fileList.getSelectionModel().select(model.getCurrentOpenedImage());
 						Thread.sleep(INTERVAL_TIME);
 					}
 					if (i == model.getImagesInDirectory().size() - 1) {
@@ -300,6 +318,7 @@ public class ImageViewerController {
 			Image image = SwingFXUtils.toFXImage(bufferedImage, null);
 			imageViewer.setImage(image);
 			model.setCurrentOpenedImage(file);
+			fileList.getSelectionModel().select(model.getCurrentOpenedImage());
 			handleZoomSlider();
 			LOG.debug("Successfully opened image");
 		} catch (IOException exception) {
@@ -320,5 +339,33 @@ public class ImageViewerController {
 		alert.setHeaderText("An error occured.");
 		alert.setContentText(errorMessage);
 		alert.showAndWait();
+	}
+	
+	@FXML
+	private void nextImageButtonAction(ActionEvent event) {
+		isSlideShowRestartRequired = true;
+		for (int i = getStartingIndexInSlideShow(); i < model.getImagesInDirectory().size(); i++) {
+			if (i >= model.getImagesInDirectory().size() - 1) {
+				i = -1;
+			}
+			if (model.getImagesInDirectory().get(i+1).exists()) {
+				openImage(model.getImagesInDirectory().get(i+1));
+				return;
+			}
+		}
+	}
+	
+	@FXML
+	private void previousImageButtonAction(ActionEvent event) {
+		isSlideShowRestartRequired = true;
+		for (int i = getStartingIndexInSlideShow(); i >= 0; i--) {
+			if (i <= 0) {
+				i = model.getImagesInDirectory().size();
+			}
+			if (model.getImagesInDirectory().get(i-1).exists()) {
+				openImage(model.getImagesInDirectory().get(i-1));
+				return;
+			}
+		}
 	}
 }

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 
-<AnchorPane fx:id="mainAnchorPane" prefHeight="1000.0" prefWidth="1700.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.capgemini.imageviewer.controller.ImageViewerController">
+<AnchorPane fx:id="mainAnchorPane" minHeight="589.0" minWidth="1000.0" prefHeight="1000.0" prefWidth="1700.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.capgemini.imageviewer.controller.ImageViewerController">
    <children>
       <Button fx:id="loadButton" layoutX="888.0" layoutY="948.0" mnemonicParsing="false" onAction="#loadButtonAction" text="Load Image" />
       <HBox fx:id="myHBox" alignment="CENTER" centerShape="false" fillHeight="false" layoutX="237.0" layoutY="41.0" prefHeight="900.0" prefWidth="1400.0" scaleShape="false">
@@ -26,9 +26,11 @@
             </ScrollPane>
          </children>
       </HBox>
-      <ListView fx:id="fileList" layoutX="23.0" layoutY="41.0" prefHeight="900.0" prefWidth="200.0" />
+      <ListView fx:id="fileList" layoutX="14.0" layoutY="41.0" prefHeight="900.0" prefWidth="200.0" />
       <CheckBox fx:id="slideShowCheckBox" layoutX="1486.0" layoutY="953.0" mnemonicParsing="false" text="Slide Show" />
       <Slider fx:id="zoomSlider" layoutX="1306.0" layoutY="955.0" />
-      <Label layoutX="1214.0" layoutY="953.0" prefHeight="21.0" prefWidth="86.0" text="Zoom bar" />
+      <Label layoutX="1214.0" layoutY="953.0" prefHeight="21.0" prefWidth="86.0" text="Zoom" />
+      <Button fx:id="previousImageButton" layoutX="832.0" layoutY="948.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="36.0" text="&lt;" onAction="#previousImageButtonAction" />
+      <Button fx:id="nextImageButton" layoutX="1005.0" layoutY="949.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="36.0" text="&gt;" onAction="#nextImageButtonAction" />
    </children>
 </AnchorPane>
