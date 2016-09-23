@@ -16,7 +16,6 @@ import com.capgemini.imageviewer.model.ImageViewerModel;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -78,8 +77,6 @@ public class ImageViewerController {
 	
 	private boolean isSlideShowEnabled = false;
 	
-	private boolean isSlideShowRestartRequired = false;
-
 	@FXML
 	private void initialize() {
 		scrollPane.setContent(imageViewer);
@@ -161,9 +158,6 @@ public class ImageViewerController {
 		} else {
 			openImage(fileList.getSelectionModel().getSelectedItem());
 		}
-		if (isSlideShowEnabled == true) {
-			isSlideShowRestartRequired = true;
-		}
 	}
 
 	/**By disabling CheckBox, there will be no possibility to start slide show. Only after successful listing of all
@@ -218,21 +212,12 @@ public class ImageViewerController {
 			slideShow.start();
 		}
 	}
-	
-	private void restartSlideShow() {
-		if (isSlideShowRestartRequired == true && isSlideShowEnabled == true) {
-			isSlideShowRestartRequired = false;
-			startSlideShow();
-			return;
-		}
-		isSlideShowRestartRequired = false;
-	}
 
 	private Task<Void> listImagesInDirectory() {
 		File parentDirectory = model.getCurrentOpenedImage().getParentFile();
 		Task<Void> backgroundImagesListing = new Task<Void>() {
 			@Override
-			protected Void call() throws Exception {
+			protected Void call() {
 				if (parentDirectory != null && parentDirectory.isDirectory()) {
 					File[] fileTable = parentDirectory.listFiles(new FilenameFilter() {
 						public boolean accept(File dir, String name) {
@@ -270,20 +255,9 @@ public class ImageViewerController {
 			@Override
 			protected Void call() throws InterruptedException {
 				Thread.sleep(INTERVAL_TIME);
-				for (int i = getStartingIndexInSlideShow(); i < model.getImagesInDirectory().size(); i++) {
-					if (isSlideShowRestartRequired == true) {
-						return null;
-					}
-					if (isSlideShowEnabled == false) {
-						return null;
-					}
-					if (model.getImagesInDirectory().get(i).exists() && model.getImagesInDirectory().get(i) != model.getCurrentOpenedImage()) {
-						openImage(model.getImagesInDirectory().get(i));
-						Thread.sleep(INTERVAL_TIME);
-					}
-					if (i == model.getImagesInDirectory().size() - 1) {
-						i = 0;
-					}
+				while (isSlideShowEnabled == true) {
+					openImage(model.getImagesInDirectory().get(getNextIndexInSlideShow()));
+					Thread.sleep(INTERVAL_TIME);
 				}
 				return null;
 			}
@@ -293,18 +267,24 @@ public class ImageViewerController {
 				slideShowCheckBox.setSelected(false);
 			}
 		};
-		slideShow.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				restartSlideShow();
-			}
-		});
 		return slideShow;
 	}
 	
-	private int getStartingIndexInSlideShow() {
+	private int getCurrentIndexInSlideShow() {
 		if (fileList.getSelectionModel().isEmpty() == false) {
 			return fileList.getSelectionModel().getSelectedIndex();
+		}
+		return 0;
+	}
+	
+	private int getNextIndexInSlideShow() {
+		for (int i = getCurrentIndexInSlideShow(); i <= model.getImagesInDirectory().size() - 1; i++) {
+			if (i >= model.getImagesInDirectory().size() - 1) {
+				i = -1;
+			}
+			if (model.getImagesInDirectory().get(i+1).exists() && model.getImagesInDirectory().get(i+1) != model.getCurrentOpenedImage()) {
+				return i+1;
+			}
 		}
 		return 0;
 	}
@@ -343,22 +323,12 @@ public class ImageViewerController {
 	
 	@FXML
 	private void nextImageButtonAction(ActionEvent event) {
-		isSlideShowRestartRequired = true;
-		for (int i = getStartingIndexInSlideShow(); i < model.getImagesInDirectory().size(); i++) {
-			if (i >= model.getImagesInDirectory().size() - 1) {
-				i = -1;
-			}
-			if (model.getImagesInDirectory().get(i+1).exists()) {
-				openImage(model.getImagesInDirectory().get(i+1));
-				return;
-			}
-		}
+		openImage(model.getImagesInDirectory().get(getNextIndexInSlideShow()));
 	}
 	
 	@FXML
 	private void previousImageButtonAction(ActionEvent event) {
-		isSlideShowRestartRequired = true;
-		for (int i = getStartingIndexInSlideShow(); i >= 0; i--) {
+		for (int i = getCurrentIndexInSlideShow(); i >= 0; i--) {
 			if (i <= 0) {
 				i = model.getImagesInDirectory().size();
 			}
