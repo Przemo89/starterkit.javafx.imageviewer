@@ -201,8 +201,13 @@ public class ImageViewerController {
 	}
 
 	private void processListingImagesInDirectory() {
+		disableSlideShow();
 		Task<Void> backgroundFilesListing = listImagesInDirectory();
 		new Thread(backgroundFilesListing).start();
+	}
+	
+	private void refreshAllImagesInDirectory() {
+		processListingImagesInDirectory();
 	}
 	
 	private void startSlideShow() {
@@ -239,7 +244,9 @@ public class ImageViewerController {
 			protected void succeeded() {
 				LOG.debug("Successfully crated images list in current directory");
 				fileList.getSelectionModel().select(model.getCurrentOpenedImage());
-				slideShowCheckBox.setDisable(false);
+				if (model.getImagesInDirectory().size() > 1) {
+					slideShowCheckBox.setDisable(false);
+				}
 			}
 
 			@Override
@@ -256,6 +263,9 @@ public class ImageViewerController {
 			protected Void call() throws InterruptedException {
 				Thread.sleep(INTERVAL_TIME);
 				while (isSlideShowEnabled == true) {
+					if (model.getImagesInDirectory().size() <= 1) {
+						return null;
+					}
 					openImage(model.getImagesInDirectory().get(getNextIndexInSlideShow()));
 					Thread.sleep(INTERVAL_TIME);
 				}
@@ -278,7 +288,13 @@ public class ImageViewerController {
 	}
 	
 	private int getNextIndexInSlideShow() {
-		for (int i = getCurrentIndexInSlideShow(); i <= model.getImagesInDirectory().size() - 1; i++) {
+		for (int i = getCurrentIndexInSlideShow(), counter = 0; i <= model.getImagesInDirectory().size() - 1; i++, counter++) {
+			// if counter wouldn't be check, then this loop could go infinitely in case when after listing all images in directory
+			// all images beside already opened would be deleted
+			if (counter == model.getImagesInDirectory().size()) {
+				refreshAllImagesInDirectory();
+				return getCurrentIndexInSlideShow();
+			}
 			if (i >= model.getImagesInDirectory().size() - 1) {
 				i = -1;
 			}
@@ -328,7 +344,13 @@ public class ImageViewerController {
 	
 	@FXML
 	private void previousImageButtonAction(ActionEvent event) {
-		for (int i = getCurrentIndexInSlideShow(); i >= 0; i--) {
+		for (int i = getCurrentIndexInSlideShow(), counter = 0; i >= 0; i--, counter++) {
+			// if counter wouldn't be check, then this loop could go infinitely in case when after listing all images in directory
+			// all images beside already opened would be deleted
+			if (counter == model.getImagesInDirectory().size()) {
+				refreshAllImagesInDirectory();
+				return;
+			}
 			if (i <= 0) {
 				i = model.getImagesInDirectory().size();
 			}
