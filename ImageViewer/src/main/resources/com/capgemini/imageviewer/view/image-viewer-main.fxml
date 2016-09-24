@@ -12,11 +12,14 @@
 
 <AnchorPane fx:id="mainAnchorPane" minHeight="589.0" minWidth="1000.0" prefHeight="1000.0" prefWidth="1700.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.capgemini.imageviewer.controller.ImageViewerController">
    <children>
+   	  <!-- REV: teksty z bundla -->
       <Button fx:id="loadButton" layoutX="888.0" layoutY="948.0" mnemonicParsing="false" onAction="#loadButtonAction" text="Load Image" />
+      <!-- REV: ten HBox nie jest potrzebny -->
       <HBox fx:id="myHBox" alignment="CENTER" centerShape="false" fillHeight="false" layoutX="237.0" layoutY="41.0" prefHeight="900.0" prefWidth="1400.0" scaleShape="false">
          <children>
             <ScrollPane fx:id="scrollPane">
               <content>
+              	<!-- REV: ten AnchorPane nie jest potrzebny -->
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="898.0" prefWidth="1398.0">
                      <children>
                         <ImageView fx:id="imageViewer" pickOnBounds="true" preserveRatio="true" />

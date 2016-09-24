@@ -10,6 +10,7 @@ import javafx.collections.FXCollections;
 
 public class ImageViewerModel {
 
+	// REV: wykomentowany kod
 //	private final StringProperty fileName = new SimpleStringProperty();
 	private File currentOpenedImage;
 	private final ListProperty<File> imagesInDirectory = new SimpleListProperty<>(FXCollections.observableList(new ArrayList<>()));

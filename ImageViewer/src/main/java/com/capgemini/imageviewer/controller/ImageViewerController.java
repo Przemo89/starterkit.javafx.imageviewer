@@ -79,12 +79,15 @@ public class ImageViewerController {
 	
 	@FXML
 	private void initialize() {
+		// REV: to nie jest konieczne jesli poprawisz FXMLa
 		scrollPane.setContent(imageViewer);
+		// REV: style powinny byc zdefiniowane w pliku CSS
 		scrollPane.setStyle("-fx-background-color:transparent;");
 		myHBox.setAlignment(Pos.CENTER);
 		initializeListView();
 		initializeCheckBox();
 		initializeSlider();
+		// REV: lepiej uzyc bindow
 		nextImageButton.setDisable(true);
 		previousImageButton.setDisable(true);
 	}
@@ -112,6 +115,7 @@ public class ImageViewerController {
 		slideShowCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				// REV: binding
 				if (slideShowCheckBox.isSelected()) {
 					isSlideShowEnabled = true;
 					startSlideShow();
@@ -135,6 +139,7 @@ public class ImageViewerController {
 				setText(null);
 			}
 		});
+		// REV: lepiej podpiac listenera pod selectedItem
 		fileList.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -166,6 +171,7 @@ public class ImageViewerController {
 	 */
 	@FXML
 	private void loadButtonAction(ActionEvent event) {
+		// REV: i tak listujesz zawartosc katalogu, wiec lepiej uzyc DirectoryChoosera
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("All Images", "*.jpg", "*.bmp", "*.gif", "*.png"),
@@ -182,15 +188,18 @@ public class ImageViewerController {
 	
 	private void handleNextAndPreviousButton() {
 		if (fileList.getItems().size() <= 1) {
+			// REV: bindy
 			nextImageButton.setDisable(true);
 			previousImageButton.setDisable(true);
 			return;
 		}
+		// REV: bindy
 		nextImageButton.setDisable(false);
 		previousImageButton.setDisable(false);
 	}
 
 	private void disableSlideShow() {
+		// REV: bindy
 		slideShowCheckBox.setSelected(false);
 		slideShowCheckBox.setDisable(true);
 	}
@@ -213,6 +222,7 @@ public class ImageViewerController {
 	private void startSlideShow() {
 		Thread slideShow = new Thread(processSlideShow());
 		slideShow.setDaemon(true);
+		// REV: nie trzeba porownywac do true
 		if (model.getImagesInDirectory().size() > 1 && isSlideShowEnabled == true) {
 			slideShow.start();
 		}
@@ -230,6 +240,7 @@ public class ImageViewerController {
 						}
 					});
 					if (fileTable != null && fileTable.length > 0) {
+						// REV: Arrays.asList() 
 						List<File> fileList = new ArrayList<>();
 						for (File file : fileTable) {
 							fileList.add(file);
@@ -245,6 +256,7 @@ public class ImageViewerController {
 				LOG.debug("Successfully crated images list in current directory");
 				fileList.getSelectionModel().select(model.getCurrentOpenedImage());
 				if (model.getImagesInDirectory().size() > 1) {
+					// REV: bindy
 					slideShowCheckBox.setDisable(false);
 				}
 			}
@@ -258,10 +270,12 @@ public class ImageViewerController {
 	}
 
 	private Task<Void> processSlideShow() {
+		// REV: lepiej uzyc klasy Timer
 		Task<Void> slideShow = new Task<Void>() {
 			@Override
 			protected Void call() throws InterruptedException {
 				Thread.sleep(INTERVAL_TIME);
+				// REV: j.w.
 				while (isSlideShowEnabled == true) {
 					if (model.getImagesInDirectory().size() <= 1) {
 						return null;
@@ -281,6 +295,7 @@ public class ImageViewerController {
 	}
 	
 	private int getCurrentIndexInSlideShow() {
+		// REV: j.w.
 		if (fileList.getSelectionModel().isEmpty() == false) {
 			return fileList.getSelectionModel().getSelectedIndex();
 		}
@@ -310,6 +325,7 @@ public class ImageViewerController {
 			return;
 		}
 		try {
+			// REV: javafx.scene.image.Image
 			BufferedImage bufferedImage = ImageIO.read(file);
 			Image image = SwingFXUtils.toFXImage(bufferedImage, null);
 			imageViewer.setImage(image);
@@ -331,6 +347,7 @@ public class ImageViewerController {
 	
 	private void displayErrorBox(String errorMessage) {
 		Alert alert = new Alert(AlertType.ERROR);
+		// REV: teksty z bundla
 		alert.setTitle("Error!");
 		alert.setHeaderText("An error occured.");
 		alert.setContentText(errorMessage);
